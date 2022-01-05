@@ -20,6 +20,12 @@ Pick three.";
 I really enjoy cold weather,
 I think only cool guys enjoy winter.";
 
-        assert_eq!(vec![(1, "I really enjoy cold weather,"), (2, "I think only cool guys enjoy winter.")], search(expr, data));
+        assert_eq!(
+            vec![
+                (1, "I really enjoy cold weather,"),
+                (2, "I think only cool guys enjoy winter.")
+            ],
+            search(expr, data)
+        );
     }
 }

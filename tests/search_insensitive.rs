@@ -10,6 +10,13 @@ Rust:
 safe, fast, productive.
 Pick three.";
 
-        assert_eq!(vec![(1, "Rust:"), (2, "safe, fast, productive."), (3, "Pick three.")], search_insensitive(expr, data));
+        assert_eq!(
+            vec![
+                (1, "Rust:"),
+                (2, "safe, fast, productive."),
+                (3, "Pick three.")
+            ],
+            search_insensitive(expr, data)
+        );
     }
 }

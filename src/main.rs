@@ -1,15 +1,13 @@
+use rust_grep::Config;
 use std::env;
 use std::process;
-use rust_grep::Config;
 
 fn print_error(err: &str) {
     eprintln!("[rust_grep] error: {}", err);
 }
 
 fn main() {
-    let argv: Vec<String> = env::args().collect();
-
-    let config = Config::new(&argv).unwrap_or_else(|err| {
+    let config = Config::new(env::args()).unwrap_or_else(|err| {
         print_error(err);
         process::exit(1);
     });

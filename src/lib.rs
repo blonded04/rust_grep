@@ -1,51 +1,55 @@
+use std::env;
 use std::error::Error;
 use std::fs;
-use std::env;
 
 pub struct Config {
     pub expr: String,
     pub filename: String,
     pub case_sensitive: bool,
-    pub regex: bool,
 }
 
 impl Config {
-    pub fn new(argv: &[String]) -> Result<Config, &str> {
-        if argv.len() < 3 {
-            return Err("Expected at least 2 arguments.");
-        }
+    pub fn new(mut argv: env::Args) -> Result<Config, &'static str> {
+        argv.next();
 
-        let expr = argv[1].clone();
-        let filename = argv[2].clone();
+        let expr = match argv.next() {
+            Some(arg) => arg,
+            None => return Err("No string to search provided."),
+        };
+
+        let filename = match argv.next() {
+            Some(arg) => arg,
+            None => return Err("No file provided."),
+        };
+
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
-        let regex = env::var("NO_REGEX").is_err();
 
-        Ok(Config { expr, filename, case_sensitive, regex })
+        Ok(Config {
+            expr,
+            filename,
+            case_sensitive,
+        })
     }
 }
 
-pub fn search<'a>(expr: &str, data: &'a str) -> Vec<(usize, &'a str)> {  // TODO: Add regex.
-    let mut res = vec![];
-    for (i_line, string) in data.lines().enumerate() {
-        if string.contains(expr) {
-            res.push((i_line + 1, string));
-        }
-    }
-
-    res
+pub fn search<'a>(expr: &str, data: &'a str) -> Vec<(usize, &'a str)> {
+    // TODO: Add regex.
+    data.lines()
+        .enumerate()
+        .filter(|line| line.1.contains(&expr))
+        .map(|line| (line.0 + 1, line.1))
+        .collect()
 }
 
 pub fn search_insensitive<'a>(expr: &str, data: &'a str) -> Vec<(usize, &'a str)> {
+    // TODO: Add regex.
     let expr = expr.to_lowercase();
 
-    let mut res = vec![];
-    for (i_line, string) in data.lines().enumerate() {
-        if string.to_lowercase().contains(&expr) {
-            res.push((i_line + 1, string));
-        }
-    }
-
-    res
+    data.lines()
+        .enumerate()
+        .filter(|line| line.1.to_lowercase().contains(&expr))
+        .map(|line| (line.0 + 1, line.1))
+        .collect()
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
@@ -58,7 +62,10 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
         found = search_insensitive(&config.expr, &data);
     }
 
-    println!("* Searching for '{}' in '{}'...", &config.expr, &config.filename);
+    println!(
+        "* Searching for '{}' in '{}'...",
+        &config.expr, &config.filename
+    );
     for (i_line, string) in found {
         println!("    Line {}: '{}'", i_line, string);
     }
