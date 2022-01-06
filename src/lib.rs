@@ -1,7 +1,7 @@
+use regex::Regex;
 use std::env;
 use std::error::Error;
 use std::fs;
-use regex::Regex;
 
 pub struct Config {
     pub expr: String,
@@ -58,10 +58,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let expr = Regex::new(&expr_string)?;
 
-    println!(
-        "* Searching for '{}' in '{}'...",
-        &expr, &config.filename
-    );
+    println!("* Searching for '{}' in '{}'...", &expr, &config.filename);
     for (i_line, string) in search(&expr, &data) {
         println!("    Line {}: '{}'", i_line, string);
     }

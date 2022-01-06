@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use std::error::Error;
     use regex::Regex;
     use rust_grep::*;
+    use std::error::Error;
 
     #[test]
     fn single_line() -> Result<(), Box<dyn Error>> {
