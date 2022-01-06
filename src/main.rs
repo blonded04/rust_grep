@@ -13,6 +13,6 @@ fn main() {
     });
 
     rust_grep::run(config).unwrap_or_else(|_err| {
-        print_error("Couldn't read file. Check if file has correct name and read permission.");
+        print_error("Couldn't read file or string-to-search.");
     });
 }

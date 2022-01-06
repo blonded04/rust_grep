@@ -1,11 +1,13 @@
 use std::env;
 use std::error::Error;
 use std::fs;
+use regex::Regex;
 
 pub struct Config {
     pub expr: String,
     pub filename: String,
     pub case_sensitive: bool,
+    pub regex: bool,
 }
 
 impl Config {
@@ -23,50 +25,44 @@ impl Config {
         };
 
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
+        let regex = env::var("NO_REGEX").is_err();
 
         Ok(Config {
             expr,
             filename,
             case_sensitive,
+            regex,
         })
     }
 }
 
-pub fn search<'a>(expr: &str, data: &'a str) -> Vec<(usize, &'a str)> {
-    // TODO: Add regex.
+pub fn search<'a>(expr: &Regex, data: &'a str) -> Vec<(usize, &'a str)> {
     data.lines()
         .enumerate()
-        .filter(|line| line.1.contains(&expr))
-        .map(|line| (line.0 + 1, line.1))
-        .collect()
-}
-
-pub fn search_insensitive<'a>(expr: &str, data: &'a str) -> Vec<(usize, &'a str)> {
-    // TODO: Add regex.
-    let expr = expr.to_lowercase();
-
-    data.lines()
-        .enumerate()
-        .filter(|line| line.1.to_lowercase().contains(&expr))
+        .filter(|line| expr.is_match(&line.1))
         .map(|line| (line.0 + 1, line.1))
         .collect()
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let data = fs::read_to_string(&config.filename)?;
+    let mut data = fs::read_to_string(&config.filename)?;
 
-    let found;
+    let mut expr_string = match config.regex {
+        true => config.expr.clone(),
+        false => format!("{}{}{}", ".*", config.expr.clone(), ".*"),
+    };
     if config.case_sensitive {
-        found = search(&config.expr, &data);
-    } else {
-        found = search_insensitive(&config.expr, &data);
+        expr_string = config.expr.to_lowercase();
+        data = data.to_lowercase();
     }
+
+    let expr = Regex::new(&expr_string)?;
 
     println!(
         "* Searching for '{}' in '{}'...",
-        &config.expr, &config.filename
+        &expr, &config.filename
     );
-    for (i_line, string) in found {
+    for (i_line, string) in search(&expr, &data) {
         println!("    Line {}: '{}'", i_line, string);
     }
 
